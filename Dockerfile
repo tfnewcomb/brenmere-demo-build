@@ -44,9 +44,11 @@ RUN bundle exec bootsnap precompile -j 1 app/ lib/
 RUN SECRET_KEY_BASE_DUMMY=1 SKIP_TAILWIND_BUILD=1 ./bin/rails assets:precompile
 
 FROM base
+# LibreOffice Writer (headless): Word drafts render in the Preview pane (app/lib/office_pdf.rb).
 RUN apt-get update -qq && \
     apt-get install --no-install-recommends -y \
-      python3 pipx pandoc libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-liberation && \
+      python3 pipx pandoc libpango-1.0-0 libpangoft2-1.0-0 libharfbuzz-subset0 fonts-liberation \
+      libreoffice-writer-nogui && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install weasyprint==69.0 && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "markitdown[pdf,docx,xlsx,pptx]==0.1.5"
