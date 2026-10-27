@@ -52,6 +52,20 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install weasyprint==69.0 && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "markitdown[pdf,docx,xlsx,pptx]==0.1.5"
+# eMudhra intermediate CA compromise (Oct 2026; Debian DSA-6572-1): take the
+# fixed trust store (ca-certificates 20250419+deb13u1, NSS for LibreOffice) and
+# the fixed Python certifi bundle (>= 2026.10.19, used by requests inside the
+# markitdown venv). The build fails if an old trust store slips through.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends --only-upgrade -y ca-certificates libnss3 && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives && \
+    update-ca-certificates --fresh > /dev/null && \
+    dpkg --compare-versions "$(dpkg-query -W -f='${Version}' ca-certificates)" ge 20250419+deb13u1 && \
+    ! ls /etc/ssl/certs/emSign_ECC_Root_CA_-_G3.pem /etc/ssl/certs/Comodo_AAA_Services_root.pem 2> /dev/null && \
+    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx inject --force markitdown "certifi>=2026.10.19" && \
+    PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx runpip weasyprint install -q "certifi>=2026.10.19" && \
+    for v in /opt/pipx/venvs/*; do "$v/bin/python" -c "import certifi,sys; print(sys.argv[1], certifi.__version__); assert certifi.__version__ >= '2026.10.19'; assert 'emSign ECC Root CA - G3' not in open(certifi.where()).read()" "$v"; done && \
+    echo "trust store: ca-certificates $(dpkg-query -W -f='${Version}' ca-certificates)"
 RUN groupadd --system --gid 1000 rails && \
     useradd rails --uid 1000 --gid 1000 --create-home --shell /bin/bash
 COPY --chown=rails:rails --from=build "${BUNDLE_PATH}" "${BUNDLE_PATH}"
