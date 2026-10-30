@@ -3,7 +3,7 @@
 # the source is cloned at build time from a PRIVATE repo with a read-only
 # deploy key that Render supplies as a BuildKit secret (never stored in the
 # image). DEMO_REF (a commit SHA, set on the Render service) busts the cache.
-ARG RUBY_VERSION=3.4.8
+ARG RUBY_VERSION=3.4.12
 
 FROM docker.io/library/ruby:$RUBY_VERSION-slim AS src
 ARG DEMO_REF=demo-render
