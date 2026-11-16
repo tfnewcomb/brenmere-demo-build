@@ -52,6 +52,13 @@ RUN apt-get update -qq && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install weasyprint==69.0 && \
     PIPX_HOME=/opt/pipx PIPX_BIN_DIR=/usr/local/bin pipx install "markitdown[pdf,docx,xlsx,pptx]==0.1.5"
+# qpdf and exiftool clean outbound PDFs. Impress renders PowerPoint. Carlito
+# and Caladea match Calibri and Cambria. Liberation matches Arial, Times, and Courier.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      qpdf libimage-exiftool-perl libreoffice-impress-nogui \
+      fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives
 # eMudhra intermediate CA compromise (Oct 2026; Debian DSA-6572-1): take the
 # fixed trust store (ca-certificates 20250419+deb13u1, NSS for LibreOffice) and
 # the fixed Python certifi bundle (>= 2026.10.19, used by requests inside the
