@@ -59,6 +59,13 @@ RUN apt-get update -qq && \
       qpdf libimage-exiftool-perl libreoffice-impress-nogui \
       fonts-liberation fonts-crosextra-carlito fonts-crosextra-caladea && \
     rm -rf /var/lib/apt/lists /var/cache/apt/archives
+# Local OCR for scanned PDFs and images (matches brenmere-demo app Dockerfile).
+# Fail the build if a tool is missing, rather than discovering it at runtime.
+RUN apt-get update -qq && \
+    apt-get install --no-install-recommends -y \
+      ocrmypdf tesseract-ocr tesseract-ocr-eng ghostscript unpaper pngquant && \
+    rm -rf /var/lib/apt/lists /var/cache/apt/archives && \
+    ocrmypdf --version && tesseract --version
 # eMudhra intermediate CA compromise (Oct 2026; Debian DSA-6572-1): take the
 # fixed trust store (ca-certificates 20250419+deb13u1, NSS for LibreOffice) and
 # the fixed Python certifi bundle (>= 2026.10.19, used by requests inside the
